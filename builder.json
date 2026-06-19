@@ -1,0 +1,17 @@
+{
+  "project": "cafeteria_flutter",
+  "platform": "ios",
+  "github": {
+    "owner": "chrissunol",
+    "repo": "cafeteria_flutter"
+  },
+  "ios": {
+    "path": "ios"
+  },
+  "flutter": {
+    "version": "3.44.0",
+    "watch": {}
+  },
+  "reactNative": {},
+  "mobai": {}
+}
