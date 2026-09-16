@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cafeteria_flutter/ui/pages/main_page.dart';
 import 'package:cafeteria_flutter/ui/theme/app_theme.dart';
 
@@ -15,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _controller;
   late final Animation<double> _fade;
   late final Animation<double> _scale;
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -28,11 +30,10 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
     _controller.forward();
-    _openApp();
+    _navigationTimer = Timer(const Duration(milliseconds: 1600), _openApp);
   }
 
-  Future<void> _openApp() async {
-    await Future<void>.delayed(const Duration(milliseconds: 1600));
+  void _openApp() {
     if (!mounted) return;
 
     Navigator.pushReplacement(
@@ -48,88 +49,97 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.graphite,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fade,
-          child: ScaleTransition(
-            scale: _scale,
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                children: [
-                  const Spacer(),
-                  Container(
-                    width: 104,
-                    height: 104,
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(45),
-                          blurRadius: 30,
-                          offset: const Offset(0, 14),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.graphite,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.graphite,
+        body: SafeArea(
+          child: FadeTransition(
+            opacity: _fade,
+            child: ScaleTransition(
+              scale: _scale,
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  children: [
+                    const Spacer(),
+                    Container(
+                      width: 104,
+                      height: 104,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(45),
+                            blurRadius: 30,
+                            offset: const Offset(0, 14),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/images/icon.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.inventory_2_rounded,
+                          color: AppColors.graphite,
+                          size: 54,
                         ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/icon.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.inventory_2_rounded,
-                        color: AppColors.graphite,
-                        size: 54,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'FlowStock',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 31,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.8,
+                    const SizedBox(height: 24),
+                    const Text(
+                      'FlowStock',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 31,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.8,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tu inventario, bajo control.',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tu inventario, bajo control.',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: AppColors.amber,
+                    const SizedBox(height: 30),
+                    const SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: AppColors.amber,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  const Text(
-                    'POWERED BY SUNOL LABS',
-                    style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.3,
+                    const Spacer(),
+                    const Text(
+                      'POWERED BY SUNOL LABS',
+                      style: TextStyle(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.3,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

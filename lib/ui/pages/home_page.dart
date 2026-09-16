@@ -5,6 +5,7 @@ import 'package:cafeteria_flutter/models/product.dart';
 import 'package:cafeteria_flutter/providers/inventory_provider.dart';
 import 'package:cafeteria_flutter/ui/theme/app_theme.dart';
 import 'package:cafeteria_flutter/ui/widgets/app_ui.dart';
+import 'package:cafeteria_flutter/ui/pages/data_management_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -52,7 +53,15 @@ class _HomePageState extends State<HomePage> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
                 children: [
-                  _HomeHeader(date: formattedDate),
+                  _HomeHeader(
+                    date: formattedDate,
+                    onDataTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DataManagementPage(),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   _InventoryHero(
                     value: money.format(provider.totalInvestment),
@@ -70,7 +79,8 @@ class _HomePageState extends State<HomePage> {
                   AppSectionHeader(
                     title: 'Necesitan atención',
                     actionLabel: lowStock.isEmpty ? null : 'Ver inventario',
-                    onAction: () => DefaultTabController.of(context).animateTo(1),
+                    onAction: () =>
+                        DefaultTabController.of(context).animateTo(1),
                   ),
                   const SizedBox(height: 12),
                   if (lowStock.isEmpty)
@@ -176,8 +186,9 @@ class _HomePageState extends State<HomePage> {
 
 class _HomeHeader extends StatelessWidget {
   final String date;
+  final VoidCallback onDataTap;
 
-  const _HomeHeader({required this.date});
+  const _HomeHeader({required this.date, required this.onDataTap});
 
   @override
   Widget build(BuildContext context) {
@@ -209,18 +220,10 @@ class _HomeHeader extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          width: 9,
-          height: 9,
-          decoration: const BoxDecoration(
-            color: AppColors.success,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 7),
-        Text(
-          'Actualizado',
-          style: Theme.of(context).textTheme.bodySmall,
+        AppIconButton(
+          icon: Icons.shield_outlined,
+          tooltip: 'Datos y respaldo',
+          onPressed: onDataTap,
         ),
       ],
     );

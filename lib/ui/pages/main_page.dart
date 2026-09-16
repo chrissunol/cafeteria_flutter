@@ -32,8 +32,8 @@ class _MainPageState extends State<MainPage> {
 
           return Scaffold(
             resizeToAvoidBottomInset: true,
-            body: TabBarView(
-              physics: const NeverScrollableScrollPhysics(),
+            body: const TabBarView(
+              physics: NeverScrollableScrollPhysics(),
               children: _pages,
             ),
             bottomNavigationBar: AnimatedBuilder(

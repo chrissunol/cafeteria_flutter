@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:cafeteria_flutter/models/product.dart';
@@ -89,9 +90,8 @@ class _ProductsPageState extends State<ProductsPage> {
               child: Consumer<InventoryProvider>(
                 builder: (context, provider, _) {
                   final products = provider.products
-                      .where((product) => product.name
-                          .toLowerCase()
-                          .contains(_searchQuery))
+                      .where((product) =>
+                          product.name.toLowerCase().contains(_searchQuery))
                       .toList()
                     ..sort((a, b) => a.name.compareTo(b.name));
 
@@ -177,7 +177,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 Text(
                   product == null
                       ? 'Registra la información básica del artículo.'
-                      : 'Actualiza los datos del artículo seleccionado.',
+                      : 'Actualiza precios o registra un ajuste de inventario.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 22),
@@ -214,7 +214,9 @@ class _ProductsPageState extends State<ProductsPage> {
                     Expanded(
                       child: _FormField(
                         controller: qtyCtrl,
-                        label: 'Stock actual',
+                        label: product == null
+                            ? 'Stock inicial'
+                            : 'Stock (ajuste)',
                         icon: Icons.numbers_rounded,
                         integer: true,
                       ),
@@ -236,8 +238,8 @@ class _ProductsPageState extends State<ProductsPage> {
                   child: ElevatedButton.icon(
                     onPressed: () async {
                       final name = nameCtrl.text.trim();
-                      final cost = double.tryParse(costCtrl.text.trim());
-                      final sale = double.tryParse(saleCtrl.text.trim());
+                      final cost = _parseDecimal(costCtrl.text);
+                      final sale = _parseDecimal(saleCtrl.text);
                       final quantity = int.tryParse(qtyCtrl.text.trim());
                       final minimum = int.tryParse(minCtrl.text.trim());
 
@@ -245,13 +247,19 @@ class _ProductsPageState extends State<ProductsPage> {
                         _showError(context, 'Escribe el nombre del producto.');
                         return;
                       }
-                      if (cost == null || sale == null || cost < 0 || sale < 0) {
+                      if (cost == null ||
+                          sale == null ||
+                          cost < 0 ||
+                          sale < 0) {
                         _showError(context, 'Revisa los precios ingresados.');
                         return;
                       }
-                      if (quantity == null || minimum == null ||
-                          quantity < 0 || minimum < 0) {
-                        _showError(context, 'Revisa las cantidades ingresadas.');
+                      if (quantity == null ||
+                          minimum == null ||
+                          quantity < 0 ||
+                          minimum < 0) {
+                        _showError(
+                            context, 'Revisa las cantidades ingresadas.');
                         return;
                       }
 
@@ -262,7 +270,8 @@ class _ProductsPageState extends State<ProductsPage> {
                             item.id != product?.id,
                       );
                       if (duplicate) {
-                        _showError(context, 'Ya existe un producto con ese nombre.');
+                        _showError(
+                            context, 'Ya existe un producto con ese nombre.');
                         return;
                       }
 
@@ -278,7 +287,7 @@ class _ProductsPageState extends State<ProductsPage> {
                         ),
                       );
 
-                      if (!mounted) return;
+                      if (!mounted || !sheetContext.mounted) return;
                       Navigator.pop(sheetContext);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -320,22 +329,26 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 
+  double? _parseDecimal(String value) {
+    return double.tryParse(value.trim().replaceAll(',', '.'));
+  }
+
   Future<void> _confirmDelete(BuildContext context, Product product) async {
     if (product.id == null) return;
     final provider = context.read<InventoryProvider>();
     final hasHistory = await provider.hasHistory(product.id!);
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Eliminar producto'),
+          title: const Text('Archivar producto'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('¿Deseas eliminar “${product.name}”?'),
+              Text('¿Deseas archivar “${product.name}”?'),
               if (hasHistory) ...[
                 const SizedBox(height: 14),
                 Container(
@@ -352,7 +365,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       SizedBox(width: 9),
                       Expanded(
                         child: Text(
-                          'Este producto tiene historial y su eliminación puede afectar reportes anteriores.',
+                          'El producto dejará de aparecer en el catálogo, pero su historial y sus reportes se conservarán.',
                           style: TextStyle(
                             color: AppColors.danger,
                             fontSize: 12,
@@ -374,7 +387,7 @@ class _ProductsPageState extends State<ProductsPage> {
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text(
-                'Eliminar',
+                'Archivar',
                 style: TextStyle(color: AppColors.danger),
               ),
             ),
@@ -385,9 +398,16 @@ class _ProductsPageState extends State<ProductsPage> {
 
     if (confirmed == true) {
       await provider.deleteProduct(product.id!);
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Producto eliminado.')),
+        SnackBar(
+          content: const Text('Producto archivado.'),
+          action: SnackBarAction(
+            label: 'Deshacer',
+            textColor: AppColors.amber,
+            onPressed: () => provider.restoreProduct(product.id!),
+          ),
+        ),
       );
     }
   }
@@ -562,8 +582,9 @@ class _ProductCard extends StatelessWidget {
                           ? 'Stock bajo · ${product.quantity}'
                           : '${product.quantity} unidades',
                       color: lowStock ? AppColors.danger : AppColors.success,
-                      backgroundColor:
-                          lowStock ? AppColors.dangerSoft : AppColors.successSoft,
+                      backgroundColor: lowStock
+                          ? AppColors.dangerSoft
+                          : AppColors.successSoft,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -607,8 +628,21 @@ class _FormField extends StatelessWidget {
           : integer
               ? TextInputType.number
               : TextInputType.text,
-      textCapitalization:
-          integer || decimal ? TextCapitalization.none : TextCapitalization.sentences,
+      inputFormatters: integer
+          ? [FilteringTextInputFormatter.digitsOnly]
+          : decimal
+              ? [
+                  TextInputFormatter.withFunction(
+                    (oldValue, newValue) =>
+                        RegExp(r'^\d*[\.,]?\d{0,2}$').hasMatch(newValue.text)
+                            ? newValue
+                            : oldValue,
+                  ),
+                ]
+              : null,
+      textCapitalization: integer || decimal
+          ? TextCapitalization.none
+          : TextCapitalization.sentences,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 19),

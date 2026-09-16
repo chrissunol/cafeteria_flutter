@@ -1,6 +1,6 @@
 {
-    "name": "cafeteria_flutter",
-    "short_name": "cafeteria_flutter",
+    "name": "FlowStock",
+    "short_name": "FlowStock",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

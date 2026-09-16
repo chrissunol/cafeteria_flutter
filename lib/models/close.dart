@@ -26,10 +26,10 @@ class Close {
   factory Close.fromMap(Map<String, dynamic> map) {
     return Close(
       date: map['date'],
-      totalSoldUnits: map['totalSoldUnits'],
-      totalRevenue: map['totalRevenue'],
-      totalProfit: map['totalProfit'],
-      createdAt: map['createdAt'],
+      totalSoldUnits: (map['totalSoldUnits'] as num).toInt(),
+      totalRevenue: (map['totalRevenue'] as num).toDouble(),
+      totalProfit: (map['totalProfit'] as num).toDouble(),
+      createdAt: (map['createdAt'] as num).toInt(),
     );
   }
 }

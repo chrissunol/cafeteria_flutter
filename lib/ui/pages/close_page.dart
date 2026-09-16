@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:cafeteria_flutter/providers/inventory_provider.dart';
@@ -15,9 +16,10 @@ class ClosePage extends StatefulWidget {
 class _ClosePageState extends State<ClosePage> {
   final Map<int, int> _finals = {};
   final TextEditingController _searchCtrl = TextEditingController();
-  final String _todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String get _todayStr => DateFormat('yyyy-MM-dd').format(DateTime.now());
   String _searchQuery = '';
   int _formVersion = 0;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -71,9 +73,8 @@ class _ClosePageState extends State<ClosePage> {
               child: Consumer<InventoryProvider>(
                 builder: (context, provider, _) {
                   final products = provider.products
-                      .where((product) => product.name
-                          .toLowerCase()
-                          .contains(_searchQuery))
+                      .where((product) =>
+                          product.name.toLowerCase().contains(_searchQuery))
                       .toList()
                     ..sort((a, b) => a.name.compareTo(b.name));
 
@@ -107,9 +108,8 @@ class _ClosePageState extends State<ClosePage> {
                         name: product.name,
                         expected: product.quantity,
                         selected: selected,
-                        finalQuantity: product.id == null
-                            ? null
-                            : _finals[product.id!],
+                        finalQuantity:
+                            product.id == null ? null : _finals[product.id!],
                         onChanged: (value) {
                           if (product.id == null) return;
                           setState(() {
@@ -130,9 +130,9 @@ class _ClosePageState extends State<ClosePage> {
         ),
       ),
       bottomNavigationBar: AppBottomAction(
-        label: 'Realizar cierre diario',
+        label: _saving ? 'Guardando cierre…' : 'Realizar cierre diario',
         icon: Icons.check_circle_outline_rounded,
-        onPressed: _doClose,
+        onPressed: _saving ? null : _doClose,
         helperText: _finals.isEmpty
             ? 'Los productos sin contar conservarán su cantidad actual.'
             : '${_finals.length} productos contados manualmente',
@@ -143,6 +143,31 @@ class _ClosePageState extends State<ClosePage> {
   Future<void> _doClose() async {
     FocusScope.of(context).unfocus();
     final provider = context.read<InventoryProvider>();
+    if (provider.products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Agrega al menos un producto antes de cerrar.'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+    for (final entry in _finals.entries) {
+      final matches = provider.products.where((item) => item.id == entry.key);
+      if (matches.isEmpty) continue;
+      final product = matches.first;
+      if (entry.value > product.quantity) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'La cantidad de “${product.name}” supera el stock esperado (${product.quantity}). Registra primero un ajuste o una entrada.',
+            ),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+        return;
+      }
+    }
     final exists = await provider.checkCloseExists(_todayStr);
     if (!mounted) return;
 
@@ -170,6 +195,7 @@ class _ClosePageState extends State<ClosePage> {
 
     if (confirmed != true || !mounted) return;
 
+    setState(() => _saving = true);
     try {
       if (exists) {
         await provider.updateClose(_todayStr, Map.of(_finals));
@@ -203,6 +229,8 @@ class _ClosePageState extends State<ClosePage> {
           backgroundColor: AppColors.danger,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 }
@@ -340,6 +368,7 @@ class _CloseProductCard extends StatelessWidget {
             width: 84,
             child: TextField(
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               textAlign: TextAlign.center,
               onChanged: (value) {
                 final clean = value.trim();

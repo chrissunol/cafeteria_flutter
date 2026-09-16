@@ -28,12 +28,12 @@ class Entry {
 
   factory Entry.fromMap(Map<String, dynamic> map) {
     return Entry(
-      id: map['id'],
-      productId: map['productId'],
-      productName: map['productName'],
-      quantity: map['quantity'],
-      date: map['date'],
-      timestamp: map['timestamp'],
+      id: map['id'] as int?,
+      productId: (map['productId'] as num).toInt(),
+      productName: map['productName'] as String,
+      quantity: (map['quantity'] as num).toInt(),
+      date: map['date'] as String,
+      timestamp: (map['timestamp'] as num).toInt(),
     );
   }
 }

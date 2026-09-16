@@ -36,6 +36,7 @@ class _HistoryPageState extends State<HistoryPage> {
       return !closeDate.isBefore(startDate) && !closeDate.isAfter(today);
     }).toList();
   }
+
   @override
   void initState() {
     super.initState();
@@ -119,22 +120,34 @@ class _HistoryPageState extends State<HistoryPage> {
                     child: AppSectionHeader(title: 'Historial de cierres'),
                   ),
                   const SizedBox(height: 12),
-                  ...provider.closes.map(
-                    (close) => Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                      child: _CloseReportCard(
-                        close: close,
-                        profit: money.format(close.totalProfit),
-                        revenue: money.format(close.totalRevenue),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => CloseDetailPage(date: close.date),
+                  if (filteredCloses.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: AppSurface(
+                        padding: EdgeInsets.all(18),
+                        child: Text(
+                          'No hay cierres dentro del período seleccionado.',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    )
+                  else
+                    ...filteredCloses.map(
+                      (close) => Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                        child: _CloseReportCard(
+                          close: close,
+                          profit: money.format(close.totalProfit),
+                          revenue: money.format(close.totalRevenue),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CloseDetailPage(date: close.date),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             );
@@ -284,9 +297,7 @@ class _PeriodSelector extends StatelessWidget {
                       '$days días',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: isSelected
-                            ? AppColors.graphite
-                            : Colors.white70,
+                        color: isSelected ? AppColors.graphite : Colors.white70,
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),

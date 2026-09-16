@@ -40,7 +40,8 @@ class CloseDetailPage extends StatelessWidget {
           }
 
           final allItems = snapshot.data ?? const <CloseItem>[];
-          final soldItems = allItems.where((item) => item.soldUnits > 0).toList();
+          final soldItems =
+              allItems.where((item) => item.soldUnits > 0).toList();
           final soldUnits = allItems.fold<int>(
             0,
             (sum, item) => sum + item.soldUnits,
@@ -75,9 +76,8 @@ class CloseDetailPage extends StatelessWidget {
               const SizedBox(height: 28),
               AppSectionHeader(
                 title: 'Productos vendidos',
-                actionLabel: soldItems.isEmpty
-                    ? null
-                    : '${soldItems.length} productos',
+                actionLabel:
+                    soldItems.isEmpty ? null : '${soldItems.length} productos',
               ),
               const SizedBox(height: 12),
               if (soldItems.isEmpty)

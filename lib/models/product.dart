@@ -6,6 +6,7 @@ class Product {
   final int quantity;
   final int minStock;
   final int updatedAt;
+  final bool isActive;
 
   Product({
     this.id,
@@ -15,6 +16,7 @@ class Product {
     required this.quantity,
     required this.minStock,
     required this.updatedAt,
+    this.isActive = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,18 +28,20 @@ class Product {
       'quantity': quantity,
       'minStock': minStock,
       'updatedAt': updatedAt,
+      'isActive': isActive ? 1 : 0,
     };
   }
 
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
-      id: map['id'],
-      name: map['name'],
-      costPrice: map['costPrice'],
-      salePrice: map['salePrice'],
-      quantity: map['quantity'],
-      minStock: map['minStock'],
-      updatedAt: map['updatedAt'],
+      id: map['id'] as int?,
+      name: map['name'] as String,
+      costPrice: (map['costPrice'] as num).toDouble(),
+      salePrice: (map['salePrice'] as num).toDouble(),
+      quantity: (map['quantity'] as num).toInt(),
+      minStock: (map['minStock'] as num).toInt(),
+      updatedAt: (map['updatedAt'] as num).toInt(),
+      isActive: (map['isActive'] as num?)?.toInt() != 0,
     );
   }
 }

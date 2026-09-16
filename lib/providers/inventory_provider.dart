@@ -18,9 +18,9 @@ class InventoryProvider extends ChangeNotifier {
   double get totalInvestment => _totalInvestment;
   int get productCount => _productCount;
   double get avgProfit => _avgProfit;
-  List<Product> get products => _products;
-  List<Entry> get entries => _entries;
-  List<Close> get closes => _closes;
+  List<Product> get products => List.unmodifiable(_products);
+  List<Entry> get entries => List.unmodifiable(_entries);
+  List<Close> get closes => List.unmodifiable(_closes);
 
   Future<void> refreshHomeStats() async {
     _totalInvestment = await _repository.getTotalInvestment();
@@ -33,6 +33,9 @@ class InventoryProvider extends ChangeNotifier {
     _products = await _repository.getAllProducts();
     notifyListeners();
   }
+
+  Future<List<Product>> getArchivedProducts() =>
+      _repository.getArchivedProducts();
 
   Future<void> fetchEntries() async {
     _entries = await _repository.getAllEntries();
@@ -56,11 +59,17 @@ class InventoryProvider extends ChangeNotifier {
     await refreshHomeStats();
   }
 
+  Future<void> restoreProduct(int id) async {
+    await _repository.restoreProduct(id);
+    await fetchProducts();
+    await refreshHomeStats();
+  }
+
   Future<bool> hasHistory(int productId) async {
     // Check in entries
     if (_entries.isEmpty) await fetchEntries();
     if (_entries.any((e) => e.productId == productId)) return true;
-    
+
     // Check in closures
     return await _repository.productUsedInCloses(productId);
   }
@@ -79,20 +88,22 @@ class InventoryProvider extends ChangeNotifier {
     await refreshHomeStats();
   }
 
-  Future<void> generateClose(String date, Map<int, int> finalQtyByProductId) async {
+  Future<void> generateClose(
+      String date, Map<int, int> finalQtyByProductId) async {
     await _repository.generateClose(date, finalQtyByProductId);
     await fetchProducts();
     await fetchCloses();
     await refreshHomeStats();
   }
 
-  Future<void> updateClose(String date, Map<int, int> finalQtyByProductId) async {
+  Future<void> updateClose(
+      String date, Map<int, int> finalQtyByProductId) async {
     await _repository.updateClose(date, finalQtyByProductId);
     await fetchProducts();
     await fetchCloses();
     await refreshHomeStats();
   }
-  
+
   Future<List<CloseItem>> getCloseItems(String date) async {
     return await _repository.getCloseItems(date);
   }

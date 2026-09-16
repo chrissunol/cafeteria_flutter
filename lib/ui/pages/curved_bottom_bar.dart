@@ -54,9 +54,8 @@ class CurvedBottomBar extends StatelessWidget {
                           width: 46,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: selected
-                                ? AppColors.graphite
-                                : AppColors.amber,
+                            color:
+                                selected ? AppColors.graphite : AppColors.amber,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(

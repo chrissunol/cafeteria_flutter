@@ -132,7 +132,8 @@ abstract final class AppTheme {
           fontWeight: FontWeight.w400,
         ),
         labelStyle: const TextStyle(color: AppColors.textSecondary),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),

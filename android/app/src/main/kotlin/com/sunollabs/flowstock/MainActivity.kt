@@ -1,4 +1,4 @@
-package com.example.cafeteria_flutter
+package com.sunollabs.flowstock
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -35,7 +35,8 @@ class AppPageHeader extends StatelessWidget {
                 Text(title, style: Theme.of(context).textTheme.headlineMedium),
                 if (subtitle != null) ...[
                   const SizedBox(height: 3),
-                  Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
+                  Text(subtitle!,
+                      style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ],
             ),
@@ -149,7 +150,8 @@ class AppSearchField extends StatelessWidget {
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
         hintText: hintText,
-        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+        prefixIcon:
+            const Icon(Icons.search_rounded, color: AppColors.textSecondary),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
                 onPressed: onClear,
@@ -177,7 +179,8 @@ class AppSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
+        Expanded(
+            child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
         if (actionLabel != null)
           TextButton(onPressed: onAction, child: Text(actionLabel!)),
       ],
@@ -215,7 +218,8 @@ class AppEmptyState extends StatelessWidget {
               decoration: const BoxDecoration(
                 color: AppColors.surface,
                 shape: BoxShape.circle,
-                border: Border.fromBorderSide(BorderSide(color: AppColors.border)),
+                border:
+                    Border.fromBorderSide(BorderSide(color: AppColors.border)),
               ),
               child: Icon(icon, color: AppColors.textSecondary, size: 34),
             ),
@@ -347,7 +351,8 @@ class AppBottomAction extends StatelessWidget {
             if (helperText != null) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(helperText!, style: Theme.of(context).textTheme.bodySmall),
+                child: Text(helperText!,
+                    style: Theme.of(context).textTheme.bodySmall),
               ),
             ],
             SizedBox(

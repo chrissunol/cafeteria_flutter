@@ -96,12 +96,22 @@ class _EntryHistoryPageState extends State<EntryHistoryPage> {
       ),
     );
 
-    if (confirmed == true && mounted) {
-      await context.read<InventoryProvider>().deleteEntry(entry);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Entrada eliminada y stock corregido.')),
-      );
+    if (confirmed == true && context.mounted) {
+      try {
+        await context.read<InventoryProvider>().deleteEntry(entry);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Entrada eliminada y stock corregido.')),
+        );
+      } catch (error) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No se pudo eliminar la entrada: $error'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
     }
   }
 }

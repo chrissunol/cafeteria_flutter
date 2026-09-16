@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cafeteria_flutter/providers/inventory_provider.dart';
 import 'package:cafeteria_flutter/ui/pages/entry_history_page.dart';
@@ -17,6 +18,7 @@ class _EntriesPageState extends State<EntriesPage> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
   int _formVersion = 0;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -80,9 +82,8 @@ class _EntriesPageState extends State<EntriesPage> {
               child: Consumer<InventoryProvider>(
                 builder: (context, provider, _) {
                   final products = provider.products
-                      .where((product) => product.name
-                          .toLowerCase()
-                          .contains(_searchQuery))
+                      .where((product) =>
+                          product.name.toLowerCase().contains(_searchQuery))
                       .toList()
                     ..sort((a, b) => a.name.compareTo(b.name));
 
@@ -136,9 +137,9 @@ class _EntriesPageState extends State<EntriesPage> {
         ),
       ),
       bottomNavigationBar: AppBottomAction(
-        label: 'Registrar entrada',
+        label: _saving ? 'Registrando…' : 'Registrar entrada',
         icon: Icons.move_to_inbox_rounded,
-        onPressed: _saveEntries,
+        onPressed: _saving ? null : _saveEntries,
         helperText: _deltas.isEmpty
             ? 'Escribe una cantidad en al menos un producto.'
             : '${_deltas.length} productos · $totalUnits unidades por agregar',
@@ -182,6 +183,7 @@ class _EntriesPageState extends State<EntriesPage> {
 
     if (confirmed != true || !mounted) return;
 
+    setState(() => _saving = true);
     try {
       await context.read<InventoryProvider>().addEntries(Map.of(_deltas));
       if (!mounted) return;
@@ -205,6 +207,8 @@ class _EntriesPageState extends State<EntriesPage> {
           backgroundColor: AppColors.danger,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 }
@@ -326,6 +330,7 @@ class _EntryProductCard extends StatelessWidget {
             width: 82,
             child: TextField(
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               textAlign: TextAlign.center,
               onChanged: (value) => onChanged(int.tryParse(value) ?? 0),
               decoration: const InputDecoration(
